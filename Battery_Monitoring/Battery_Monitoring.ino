@@ -6,13 +6,13 @@
 
 RTC_DATA_ATTR int bootCount = 0;
 touch_pad_t touchPin;
-const char* ssid = "RKnet";
-const char* password = "xmn3dw7v2qquzf5";
+const char* ssid = "";
+const char* password = "";
 
 WiFiClient  client;
 
 unsigned long myChannelNumber = 1;
-const char* myWriteAPIKey = "AWV5PJCIEP25DUZK";
+const char* myWriteAPIKey = "";
 
 
 void print_wakeup_reason() {
