@@ -13,9 +13,14 @@ map<double,double> cleanData(vector<pair<double,double>> &dataset){
 
 void writeToFile(map<double,double> &data, string filename){
     ofstream myFile(filename + "_clean");
+    // for(auto it : data){
+    //     myFile<<it.first<<", ";
+    // }
+
     for(auto it : data){
-        myFile<<it.first<<" "<<it.second<<"\n";
+        myFile<<it.second<<", ";
     }
+
 
     myFile.close();
 }
@@ -42,6 +47,8 @@ vector<pair<double,double>> readFromFile(string filename){
 int main(){
     vector<string> files = {"Black Line.csv", "Red Line.csv", "Cyan Line.csv", "Green Line.csv", "Magenta Line.csv"};
     string source = "V_vs_Capacity_data/";
+    //string source = "MoreData/";
+    //string dest = "MoreCleanData/";
     string dest = "V_vs_Capacity_data_clean/";
     for(auto file : files ){
         vector<pair<double,double>> dataset = readFromFile(source + file);
