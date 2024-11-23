@@ -22,7 +22,7 @@ void setup() {
   delay(1000);  
 
   float  current = 0.0;
-  float bus_voltage = 0.0;
+  float  bus_voltage = 0.0;
   float  load_voltage = 0.0;
   float  shunt_voltage= 0.0;
   float  power= 0.0;
@@ -82,6 +82,8 @@ void setup() {
   Serial.flush();
   esp_deep_sleep_start();
 }
+
+
 
 void loop() {
  
