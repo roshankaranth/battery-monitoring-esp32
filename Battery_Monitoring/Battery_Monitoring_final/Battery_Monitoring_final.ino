@@ -1,6 +1,7 @@
 #include "ThingSpeak.h"
 #include <Adafruit_INA219.h>
 #include <WiFi.h>
+#include "time.h"
 #define uS_TO_S_FACTOR 1000000ULL 
 #define TIME_TO_SLEEP  10   
 
@@ -13,7 +14,8 @@ RTC_DATA_ATTR float bus_voltage[6];
 RTC_DATA_ATTR float current[6];
 RTC_DATA_ATTR float power[6];
 RTC_DATA_ATTR float load_voltage[6];
-RTC_DATA_ATTR float timestamp[6];
+RTC_DATA_ATTR long timestamp[6];
+RTC_DATA_ATTR long start_time;
 
 const int LED_PIN = 5;
 
@@ -22,6 +24,7 @@ void setup() {
   pinMode(LED_PIN,OUTPUT);
   Serial.begin(115200);
   delay(1000); 
+  if(cycle_count==0) getTimeStamp();
   WiFi.disconnect(true);
   btStop();
   WiFi.mode(WIFI_OFF);   
@@ -31,10 +34,9 @@ void setup() {
 
 void loop() {
   
-  Serial.println(cycle_count);
   measureCurrent();
   delay(1000);
-  if(cycle_count==5) sendDataToCloud();
+  if(cycle_count==6) sendDataToCloud();
   delay(1000);
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
   Serial.println("Entering Deep Sleep...");
@@ -71,6 +73,7 @@ void sendDataToCloud() {
         ThingSpeak.setField(3,current[i]);
         ThingSpeak.setField(4,power[i]);
         ThingSpeak.setField(5,load_voltage[i]);
+        ThingSpeak.setField(6,timestamp[i]);
 
 
       int x = ThingSpeak.writeFields(myChannelNumber,myWriteAPIKey);
@@ -90,7 +93,9 @@ void sendDataToCloud() {
 
 //Fetch sensor data
 void measureCurrent() {
-  
+  delay(1000);
+  timestamp[cycle_count] = start_time;
+  start_time += 20;
   while (!ina219.begin()) {
     digitalWrite(LED_PIN,HIGH);
     delay(1000);
@@ -110,6 +115,38 @@ void measureCurrent() {
   load_voltage[cycle_count] = bus_voltage[cycle_count] + (shunt_voltage[cycle_count] / 1000);
   cycle_count++;
 
+
+}
+
+void getTimeStamp(){
+
+  const char* ntpServer = "pool.ntp.org";
+  const long  gmtOffset_sec = 0;
+  const int   daylightOffset_sec = 3600;
+  unsigned long epochTime; 
+  const char* ssid = "RKnet";
+  const char* password = "xmn3dw7v2qquzf5";
+  WiFi.mode(WIFI_STA);
+
+  if(WiFi.status()!=WL_CONNECTED){
+    Serial.print("Attempting to connect");
+    while(WiFi.status() != WL_CONNECTED){
+      WiFi.begin(ssid, password);
+      delay(1000);
+    }
+    Serial.println("\nConnected");
+  }
+  delay(1000);
+
+  configTime(0, 0, ntpServer);
+
+  time_t now;
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    return ;
+  }
+  time(&now);
+  start_time = now;
 
 }
 
