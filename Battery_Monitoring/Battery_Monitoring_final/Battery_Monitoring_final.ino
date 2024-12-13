@@ -17,7 +17,7 @@ RTC_DATA_ATTR float load_voltage[6];
 RTC_DATA_ATTR long timestamp[6];
 RTC_DATA_ATTR long start_time;
 
-const int LED_PIN = 5;
+const int LED_PIN = 18;
 
 void setup() {
   
@@ -36,7 +36,7 @@ void loop() {
   
   measureCurrent();
   delay(1000);
-  if(cycle_count==6) sendDataToCloud();
+  if(cycle_count==3) sendDataToCloud();
   delay(1000);
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
   Serial.println("Entering Deep Sleep...");
@@ -48,6 +48,7 @@ void loop() {
 //Send data to thingspeak
 void sendDataToCloud() {
 
+  
   const char* ssid = "RKnet";
   const char* password = "xmn3dw7v2qquzf5";
   unsigned long myChannelNumber = 1;
@@ -65,8 +66,7 @@ void sendDataToCloud() {
     Serial.println("\nConnected");
   }
   delay(1000);
-
-  for(int i = 0 ; i < 6 ; i++){
+  for(int i = 0 ; i <= 6 ; i++){
 
         ThingSpeak.setField(1,shunt_voltage[i]);
         ThingSpeak.setField(2,bus_voltage[i]);
@@ -113,7 +113,11 @@ void measureCurrent() {
   current[cycle_count] = ina219.getCurrent_mA();
   power[cycle_count] = ina219.getPower_mW();
   load_voltage[cycle_count] = bus_voltage[cycle_count] + (shunt_voltage[cycle_count] / 1000);
+  Serial.printf("Measurement %d: Shunt Voltage = %.2f mV, Bus Voltage = %.2f V, Current = %.2f mA, Power = %.2f mW, Load Voltage = %.2f V\n",
+                cycle_count, shunt_voltage[cycle_count], bus_voltage[cycle_count],
+                current[cycle_count], power[cycle_count], load_voltage[cycle_count]);
   cycle_count++;
+  
 
 
 }
